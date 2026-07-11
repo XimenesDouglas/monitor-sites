@@ -1,6 +1,7 @@
 import json
 import os
 import smtplib
+import time
 from datetime import datetime, timezone
 from email.mime.text import MIMEText
 
@@ -14,7 +15,18 @@ SITES = [
 ]
 
 STATUS_FILE = os.path.join(os.path.dirname(__file__), "monitor-status.json")
-TIMEOUT = 15
+TIMEOUT = 20
+TENTATIVAS = 3
+ESPERA_ENTRE_TENTATIVAS = 5
+
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+    ),
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8",
+}
 
 GMAIL_USER = os.environ["GMAIL_USER"]
 GMAIL_APP_PASSWORD = os.environ["GMAIL_APP_PASSWORD"]
@@ -22,13 +34,24 @@ ALERT_EMAIL_TO = os.environ["ALERT_EMAIL_TO"]
 
 
 def checar_site(url):
-    for _ in range(2):
+    ultimo_motivo = ""
+    for tentativa in range(1, TENTATIVAS + 1):
         try:
-            resposta = requests.get(url, timeout=TIMEOUT, allow_redirects=True)
+            resposta = requests.get(
+                url, timeout=TIMEOUT, allow_redirects=True, headers=HEADERS
+            )
             if resposta.status_code < 400:
+                print(f"[OK] {url} respondeu {resposta.status_code} na tentativa {tentativa}")
                 return True
-        except requests.RequestException:
-            pass
+            ultimo_motivo = f"status HTTP {resposta.status_code}"
+        except requests.RequestException as erro:
+            ultimo_motivo = f"{type(erro).__name__}: {erro}"
+
+        print(f"[FALHA] {url} na tentativa {tentativa}/{TENTATIVAS}: {ultimo_motivo}")
+        if tentativa < TENTATIVAS:
+            time.sleep(ESPERA_ENTRE_TENTATIVAS)
+
+    print(f"[DOWN] {url} considerado fora do ar após {TENTATIVAS} tentativas: {ultimo_motivo}")
     return False
 
 
