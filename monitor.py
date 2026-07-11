@@ -12,6 +12,7 @@ SITES = [
     "https://voosriopan.com/",
     "https://easyflighttour.com.br/",
     "https://intestinon.com.br/",
+    "https://larissairala.com.br/",
 ]
 
 STATUS_FILE = os.path.join(os.path.dirname(__file__), "monitor-status.json")

@@ -6,6 +6,7 @@ Verifica a cada 10 minutos se os sites abaixo estão no ar e envia um e-mail de 
 - https://voosriopan.com/
 - https://easyflighttour.com.br/
 - https://intestinon.com.br/
+- https://larissairala.com.br/
 
 ## Configuração (uma única vez)
 
