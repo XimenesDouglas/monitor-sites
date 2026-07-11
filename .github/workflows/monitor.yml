@@ -33,5 +33,7 @@ jobs:
           git config user.name "Monitor de Sites"
           git config user.email "actions@github.com"
           git add monitor-status.json
-          git diff --staged --quiet || git commit -m "Atualiza status do monitoramento"
-          git diff --staged --quiet || git push
+          if ! git diff --staged --quiet; then
+            git commit -m "Atualiza status do monitoramento"
+            git push
+          fi
