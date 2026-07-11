@@ -1,0 +1,37 @@
+name: Monitor de Sites
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependencias
+        run: pip install requests
+
+      - name: Verificar sites
+        env:
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
+        run: python monitor.py
+
+      - name: Salvar status atualizado
+        run: |
+          git config user.name "Monitor de Sites"
+          git config user.email "actions@github.com"
+          git add monitor-status.json
+          git diff --staged --quiet || git commit -m "Atualiza status do monitoramento"
+          git diff --staged --quiet || git push
